@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "WikiMasters Auto-Booster Pro",
+  "version": "3.0",
+  "description": "Automatisation intelligente, bilans de session Discord, embeds visuels et suivi statistique complet",
+  "permissions": [
+    "storage",
+    "notifications",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://discord.com/*",
+    "*://www.wiki-masters.com/*",
+    "*://wiki-masters.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "128": "icon.jpg"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "WikiMasters Bot Pro",
+    "default_icon": "icon.jpg"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.wiki-masters.com/pulls*",
+        "*://wiki-masters.com/pulls*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": [
+      "file:///C:/Users/kylia/OneDrive/Documents/WikiMasters-AutoBoosters/*",
+      "http://localhost/*",
+      "http://127.0.0.1/*",
+      "https://*.vercel.app/*",
+      "https://*.github.io/*"
+    ]
+  }
+}

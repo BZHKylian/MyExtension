@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>WikiMasters Bot Pro</title>
+  <style>
+    :root {
+      --bg: #080b12;
+      --card-bg: rgba(17, 24, 39, 0.65);
+      --card-hover: rgba(26, 36, 56, 0.85);
+      --border: rgba(255, 255, 255, 0.07);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --accent-cyan: #38bdf8;
+      --accent-purple: #818cf8;
+      --discord: #5865f2;
+      --success: #10b981;
+      --danger: #f43f5e;
+      --warning: #f59e0b;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+
+      --c-commune: #94a3b8;
+      --c-peu-commune: #22c55e;
+      --c-rare: #3b82f6;
+      --c-super-rare: #a855f7;
+      --c-ultra-rare: #f97316;
+      --c-legendaire: #eab308;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      width: 340px;
+      background: radial-gradient(130% 100% at 50% 0%, #151a2e 0%, #080b12 75%);
+      color: var(--text);
+      padding: 12px;
+      min-height: 480px;
+    }
+
+    /* En-tête */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 2px;
+    }
+
+    .title-group h1 {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      background: rgba(244, 63, 94, 0.12);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.25);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .status-badge.active {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .status-badge.break {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    /* Barre d'onglets façon Segmented Control */
+    .tabs-nav {
+      display: flex;
+      gap: 3px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 3px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 6px 0;
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      color: var(--text-dim);
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: center;
+    }
+
+    .tab-btn.active {
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-cyan);
+      font-weight: 700;
+      box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.25);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(2px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Bouton d'action principal */
+    .toggle-main {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 10px;
+    }
+
+    .toggle-main.inactive {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .toggle-main.inactive:hover {
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .toggle-main.active {
+      background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.3);
+    }
+
+    .toggle-main.active:hover {
+      box-shadow: 0 6px 20px rgba(244, 63, 94, 0.45);
+      transform: translateY(-1px);
+    }
+
+    /* Cartes en verre dépoli */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.3), inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 9px 11px;
+      margin-bottom: 10px;
+    }
+
+    .cycle-live-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 9px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      font-size: 11px;
+      text-align: center;
+      color: #e2e8f0;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .cycle-live-card.break-mode {
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fde68a;
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .cycle-live-card b {
+      color: var(--accent-cyan);
+    }
+
+    .cycle-live-card.break-mode b {
+      color: var(--warning);
+    }
+
+    /* Grille de stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .stat-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 8px 6px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .stat-item:hover {
+      border-color: var(--border-hover);
+    }
+
+    .stat-num {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      letter-spacing: -0.5px;
+    }
+
+    .stat-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    /* Grille de raretés */
+    .rarity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .rarity-card {
+      border-radius: 7px;
+      padding: 5px 4px;
+      text-align: center;
+      transition: transform 0.15s ease;
+    }
+
+    .rarity-card:hover {
+      transform: translateY(-1px);
+    }
+
+    .rarity-val {
+      font-size: 12.5px;
+      font-weight: 800;
+    }
+
+    .rarity-lbl {
+      font-size: 8.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 1px;
+    }
+
+    .rc-commune { background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+    .rc-peu-commune { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); color: #4ade80; }
+    .rc-rare { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .rc-super-rare { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); color: #c084fc; }
+    .rc-ultra-rare { background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2); color: #fb923c; }
+    .rc-legendaire { background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.3); color: #fde047; box-shadow: inset 0 0 8px rgba(234, 179, 8, 0.1); }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Onglet Live Feed */
+    .live-action-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 9px;
+      padding: 8px 11px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(12px);
+    }
+
+    .live-action-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      color: var(--accent-cyan);
+      margin-bottom: 3px;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+    }
+
+    .live-action-text {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .feed-badge {
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-cyan);
+      padding: 1px 7px;
+      border-radius: 9999px;
+      font-size: 8.5px;
+      font-weight: 700;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .live-feed-list {
+      max-height: 290px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 2px;
+    }
+
+    .live-feed-list::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .live-feed-list::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.3);
+      border-radius: 4px;
+    }
+
+    .live-feed-list::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.3);
+      border-radius: 4px;
+    }
+
+    .feed-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 7px 9px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .feed-item:hover {
+      background: var(--card-hover);
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .border-commune { border-left: 3px solid var(--c-commune); }
+    .border-peu-commune { border-left: 3px solid var(--c-peu-commune); }
+    .border-rare { border-left: 3px solid var(--c-rare); }
+    .border-super-rare { border-left: 3px solid var(--c-super-rare); }
+    .border-ultra-rare { border-left: 3px solid var(--c-ultra-rare); }
+    .border-legendaire { border-left: 3px solid var(--c-legendaire); box-shadow: inset 0 0 10px rgba(234, 179, 8, 0.12); }
+
+    .feed-img-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      background: #060911;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .feed-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .feed-details {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .feed-top-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .feed-card-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .feed-time {
+      font-size: 8.5px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+
+    .feed-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1px;
+    }
+
+    .feed-rarity-tag {
+      font-size: 8.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.2px;
+    }
+
+    .fr-commune { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
+    .fr-peu-commune { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .fr-rare { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .fr-super-rare { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+    .fr-ultra-rare { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+    .fr-legendaire { background: rgba(234, 179, 8, 0.2); color: #fde047; }
+
+    .feed-price {
+      font-size: 10px;
+      font-weight: 800;
+      color: #fbbf24;
+    }
+
+    .empty-feed {
+      text-align: center;
+      padding: 34px 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Formulaires & Paramètres */
+    .settings-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .setting-row {
+      display: grid;
+      grid-template-columns: 95px 1fr 14px 1fr;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .row-label {
+      font-size: 10.5px;
+      color: #cbd5e1;
+    }
+
+    .input-box {
+      width: 100%;
+      background: rgba(10, 15, 26, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 4px;
+      font-size: 10px;
+      color: #fff;
+      text-align: center;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .input-box:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+    }
+
+    .unit-sep {
+      color: var(--text-muted);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .switch-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .switch-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 30px;
+      height: 16px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #334155;
+      transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 16px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 10px;
+      width: 10px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+    }
+
+    input:checked + .slider { background-color: #10b981; }
+    input:checked + .slider:before { transform: translateX(14px); }
+
+    .disabled-group {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .text-input {
+      width: 100%;
+      background: rgba(10, 15, 26, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 10px;
+      color: #fff;
+      outline: none;
+      margin-bottom: 5px;
+      transition: all 0.2s;
+    }
+
+    .text-input:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.15);
+    }
+
+    .thread-grid {
+      display: grid;
+      grid-template-columns: 85px 1fr;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .thread-label {
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .btn-row { display: flex; gap: 6px; }
+
+    .btn-action {
+      flex: 1;
+      padding: 7px 8px;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+      background: rgba(51, 65, 85, 0.85);
+      color: #fff;
+      border-color: var(--border-hover);
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(139, 92, 246, 0.25));
+      border-color: rgba(139, 92, 246, 0.4);
+      color: #38bdf8;
+      margin-top: 6px;
+      font-weight: 700;
+    }
+
+    .btn-save:hover {
+      border-color: rgba(139, 92, 246, 0.7);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-danger { color: #fb7185; }
+    .btn-danger:hover {
+      background: rgba(244, 63, 94, 0.15);
+      border-color: rgba(244, 63, 94, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="title-group">
+      <h1>WikiMasters PRO</h1>
+    </div>
+    <div id="statusBadge" class="status-badge">
+      <span class="status-dot"></span>
+      <span id="statusText">INACTIF</span>
+    </div>
+  </div>
+
+  <div class="tabs-nav">
+    <button class="tab-btn active" data-tab="tab-dashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="tab-feed">📜 Historique</button>
+    <button class="tab-btn" data-tab="tab-settings">⚙️ Paramètres</button>
+  </div>
+
+  <!-- ONGLET 1 : TABLEAU DE BORD -->
+  <div id="tab-dashboard" class="tab-content active">
+    <button id="toggleBtn" class="toggle-main inactive">
+      <span>⚡ LANCER LE BOT</span>
+    </button>
+
+    <div id="cycleLiveCard" class="cycle-live-card">
+      <span id="cycleLiveText">Bot en veille</span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div id="packsCount" class="stat-num">0</div>
+        <div class="stat-label">Boosters ouverts</div>
+      </div>
+      <div class="stat-item">
+        <div id="cardsCount" class="stat-num">0</div>
+        <div class="stat-label">Cartes récoltées</div>
+      </div>
+    </div>
+
+    <div class="glass-card">
+      <div class="section-title">✨ Répartition des Raretés</div>
+      <div class="rarity-grid">
+        <div class="rarity-card rc-commune">
+          <div id="countCommune" class="rarity-val">0</div>
+          <div class="rarity-lbl">Commune</div>
+        </div>
+        <div class="rarity-card rc-peu-commune">
+          <div id="countPeuCommune" class="rarity-val">0</div>
+          <div class="rarity-lbl">Peu com.</div>
+        </div>
+        <div class="rarity-card rc-rare">
+          <div id="countRare" class="rarity-val">0</div>
+          <div class="rarity-lbl">Rare</div>
+        </div>
+        <div class="rarity-card rc-super-rare">
+          <div id="countSuperRare" class="rarity-val">0</div>
+          <div class="rarity-lbl">S. Rare</div>
+        </div>
+        <div class="rarity-card rc-ultra-rare">
+          <div id="countUltraRare" class="rarity-val">0</div>
+          <div class="rarity-lbl">U. Rare</div>
+        </div>
+        <div class="rarity-card rc-legendaire">
+          <div id="countLegendaire" class="rarity-val">0</div>
+          <div class="rarity-lbl">Légendaire</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button id="exportCsvBtn" class="btn-action">📥 Export CSV</button>
+      <button id="resetStatsBtn" class="btn-action btn-danger">🗑️ Reset stats</button>
+    </div>
+  </div>
+
+  <!-- ONGLET 2 : HISTORIQUE & LIVE FEED -->
+  <div id="tab-feed" class="tab-content">
+    <div id="liveActionCard" class="live-action-card">
+      <div class="live-action-header">
+        <span class="pulse-dot"></span>
+        <span class="live-action-title">ACTION EN COURS</span>
+      </div>
+      <div id="liveActionText" class="live-action-text">Bot en veille</div>
+    </div>
+
+    <div class="section-title" style="margin-top: 6px;">
+      <span>⚡ 10 Derniers Drops (Auto & Manuel)</span>
+      <span id="feedCountBadge" class="feed-badge">0 cartes</span>
+    </div>
+
+    <div id="liveFeedList" class="live-feed-list">
+      <div class="empty-feed">Aucune carte capturée pour l'instant</div>
+    </div>
+
+    <button id="clearFeedBtn" class="btn-action btn-danger" style="width: 100%; margin-top: 8px;">
+      🗑️ Vider l'historique visuel
+    </button>
+  </div>
+
+  <!-- ONGLET 3 : PARAMÈTRES -->
+  <div id="tab-settings" class="tab-content">
+    <div class="glass-card">
+      <div class="section-title">🔔 Webhook Discord Principal</div>
+      <input type="text" id="discordWebhookUrl" class="text-input" placeholder="https://discord.com/api/webhooks/...">
+    </div>
+
+    <div class="glass-card">
+      <div class="section-title">👤 ID Discord pour Mention (Drops Majeurs & Récap)</div>
+      <input type="text" id="discordUserId" class="text-input" placeholder="Ex: 248109823098234890 ou @here">
+    </div>
+
+    <div class="glass-card">
+      <div class="section-title">☕ ID du Fil / Salon de Statut Bot (Pause & Reprise)</div>
+      <input type="text" id="pauseThreadId" class="text-input" placeholder="Ex: 129038102938109283 (Optionnel)">
+    </div>
+
+    <!-- ROUTAGE PAR RARETÉ -->
+    <div class="glass-card">
+      <div class="switch-container">
+        <span class="switch-label">✨ Routage par Rareté</span>
+        <label class="switch">
+          <input type="checkbox" id="rarityRoutingEnabled">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div id="rarityThreadsGroup" class="settings-grid">
+        <div class="thread-grid">
+          <span class="thread-label" style="color: var(--c-legendaire);">Légendaire</span>
+          <input type="text" id="threadLegendaire" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+        <div class="thread-grid">
+          <span class="thread-label" style="color: var(--c-ultra-rare);">Ultra rare</span>
+          <input type="text" id="threadUltraRare" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+        <div class="thread-grid">
+          <span class="thread-label" style="color: var(--c-super-rare);">Super rare</span>
+          <input type="text" id="threadSuperRare" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+        <div class="thread-grid">
+          <span class="thread-label" style="color: var(--c-rare);">Rare</span>
+          <input type="text" id="threadRare" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+        <div class="thread-grid">
+          <span class="thread-label" style="color: var(--c-peu-commune);">Peu com.</span>
+          <input type="text" id="threadPeuCommune" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+        <div class="thread-grid">
+          <span class="thread-label" style="color: var(--c-commune);">Commune</span>
+          <input type="text" id="threadCommune" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- ROUTAGE PAR PRIX DU MARCHÉ -->
+    <div class="glass-card">
+      <div class="switch-container">
+        <span class="switch-label">💰 Routage par Prix Marché</span>
+        <label class="switch">
+          <input type="checkbox" id="priceRoutingEnabled">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div id="priceThreadsGroup" class="settings-grid">
+        <div class="thread-grid">
+          <span class="thread-label" style="color: #f59e0b;">+1000 🪙</span>
+          <input type="text" id="threadTier1000" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+        <div class="thread-grid">
+          <span class="thread-label" style="color: #a855f7;">250 - 1000 🪙</span>
+          <input type="text" id="threadTier250" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+        <div class="thread-grid">
+          <span class="thread-label" style="color: #3b82f6;">100 - 250 🪙</span>
+          <input type="text" id="threadTier100" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+        <div class="thread-grid">
+          <span class="thread-label" style="color: #22c55e;">50 - 100 🪙</span>
+          <input type="text" id="threadTier50" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+        <div class="thread-grid">
+          <span class="thread-label" style="color: #94a3b8;">0 - 50 🪙</span>
+          <input type="text" id="threadTier0" class="input-box" placeholder="ID thread" style="text-align: left; padding: 5px 6px;">
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card">
+      <div class="section-title">🎯 Cartes Cibles Spécifiques</div>
+      <input type="text" id="targetInput" class="text-input" placeholder="Ex: Adèle Castillon, Squeezie...">
+    </div>
+
+    <div class="glass-card">
+      <div class="section-title">⏱️ Délais & Temporisations</div>
+      <div class="settings-grid">
+        <div class="setting-row">
+          <span class="row-label" title="Temporisation minimale de 1,5s par carte obligatoire">🎲 Clics (ms)</span>
+          <input type="number" id="minClickDelay" class="input-box" placeholder="1500" min="1500" value="1500" step="50">
+          <span class="unit-sep">à</span>
+          <input type="number" id="maxClickDelay" class="input-box" placeholder="2200" min="1500" value="2200" step="50">
+        </div>
+        <div class="setting-row">
+          <span class="row-label">📦 Booster (s)</span>
+          <input type="number" id="minBoosterWaitSec" class="input-box" placeholder="Min" step="0.5">
+          <span class="unit-sep">à</span>
+          <input type="number" id="maxBoosterWaitSec" class="input-box" placeholder="Max" step="0.5">
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card">
+      <div class="switch-container">
+        <span class="switch-label">☕ Cycles Farm & Pause</span>
+        <label class="switch">
+          <input type="checkbox" id="humanCyclesEnabled">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div id="humanCyclesSettings" class="settings-grid">
+        <div class="setting-row">
+          <span class="row-label">🟢 Farm (min)</span>
+          <input type="number" id="minActiveMin" class="input-box" placeholder="Min" step="0.1">
+          <span class="unit-sep">à</span>
+          <input type="number" id="maxActiveMin" class="input-box" placeholder="Max" step="0.1">
+        </div>
+        <div class="setting-row">
+          <span class="row-label">☕ Pause (min)</span>
+          <input type="number" id="minBreakMin" class="input-box" placeholder="Min" step="0.1">
+          <span class="unit-sep">à</span>
+          <input type="number" id="maxBreakMin" class="input-box" placeholder="Max" step="0.1">
+        </div>
+      </div>
+    </div>
+
+    <button id="saveConfigBtn" class="btn-action btn-save" style="width: 100%;">
+      💾 Enregistrer la configuration
+    </button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
